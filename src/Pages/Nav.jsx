@@ -35,9 +35,9 @@ const Nav = () => {
       <div className="bg-[#1e1f29]  ">
         <div className="container mx-auto item-center justify-between py-5 px-6 md:px-0">
           {/* right */}
-          <div className="text-white flex item justify-between">
+          <div className="text-white flex item-center flex-col md:flex-row justify-between gap-8">
             {/* contacts */}
-            <div className="flex items-center gap-4">
+            <div className="flex md:items-center flex-col md:flex-row gap-4">
               <div className="flex items-center gap-2">
                 <FiPhone className="text-red-800 size-4" />
                 <p className="hover:text-red-800 cursor-pointer text-[14px]">
