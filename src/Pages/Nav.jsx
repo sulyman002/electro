@@ -102,7 +102,7 @@ const Nav = () => {
           <div className="flex items-center gap-8 md:gap-3 justify-between text-white">
             <div className="flex flex-col gap-1 items-center ">
               <div className="relative ">
-                <FiHeart />
+                <FiHeart  className="hover:text-red-600 cursor-pointer"/>
                 <p className="absolute top-[-10px] right-[-15px] h-4 w-4 text-[12px] font-semibold flex items-center justify-center  rounded-full bg-red-700">
                   2
                 </p>
@@ -112,9 +112,9 @@ const Nav = () => {
             </div>
             <div className="flex flex-col gap-1 items-center ">
               <div className="relative ">
-                <div onClick={() => handleOpenCart()} className="">
+                <div onClick={() => handleOpenCart()} className=" cursor-pointer">
                   {" "}
-                  <FiShoppingCart />
+                  <FiShoppingCart className="hover:text-red-600" />
                 </div>
                 <p className="absolute top-[-10px] right-[-15px] h-4 w-4 text-[12px] font-semibold flex items-center justify-center  rounded-full bg-red-700">
                   {cart.length}
@@ -154,14 +154,14 @@ const Nav = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col px-6 md:px-0">
+                  <div className="flex flex-col my-6 px-6 md:px-0 overflow-y-auto h-5/6">
                     {cart.map((item, index) => (
                       <div
                         key={index}
-                        className="flex md:items-center md:flex-row flex-col py-4 gap-4 justify-between border-y border-gray-300 w-full bg-red-600 "
+                        className="flex md:items-center md:flex-row flex-col py-4 gap-4 justify-between border-y border-gray-300 w-full bg-whitesmoke shadow px-2 "
                       >
                         <div className="flex items-center gap-3 ">
-                          <div className="bg-gray-200">
+                          <div className="bg-gray-200/30">
                             <img
                               src={item.thumbnail}
                               alt="product image"
@@ -172,11 +172,11 @@ const Nav = () => {
                             <p className="text-[#494949] font-500 font-medium text-md ">
                               {item.title}
                             </p>
-                            <div className="flex items-center gap-3 text-[#494949] font-300 text-md bg-red-900 ">
+                            <div className="flex items-center gap-3 text-[#494949] font-300 text-md  ">
                               <p className="">${item.price}</p>
                               <p className="">Quantity: {item.quantity}</p>
                             </div>
-                            <div className="text-[18px]">
+                            <div className="text-md ">
                               Date:{" "}
                               <span className="text-[#989898]">
                                 25, May, 2024
@@ -185,16 +185,12 @@ const Nav = () => {
                           </div>
                         </div>
 
-                        
-                          <div className="cursor-pointer ">
-                            <FaTrash
-                              onClick={() =>
-                                dispatch(setRemoveFromCart(item.id))
-                              }
-                              className="w-[20px] h-[20px] text-red-600 "
-                            />
-                          </div>
-                        
+                        <div className="cursor-pointer ">
+                          <FaTrash
+                            onClick={() => dispatch(setRemoveFromCart(item.id))}
+                            className="w-[20px] h-[20px] text-red-600 "
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -210,15 +206,20 @@ const Nav = () => {
         </div>
       </div>
 
-      <div className="container mx-auto py-4 border-b border-gray-100 shadow px-6 md:px-0">
-        <nav className="gap-5 flex items-center px-6">
+      <div className=" py-4 border-b border-gray-100 shadow px-6 md:px-0">
+        <nav className="gap-5 flex items-center px-6 container mx-auto">
           <Link
             to="/"
             className=" hover:text-gray-900 cursor-pointer hover:font-semibold  "
           >
             Home
           </Link>
-          <Link to="/all-collection">All Collections</Link>
+          <Link
+            className=" hover:text-gray-900 cursor-pointer hover:font-semibold  "
+            to="/all-collection"
+          >
+            All Collections
+          </Link>
         </nav>
       </div>
     </div>
