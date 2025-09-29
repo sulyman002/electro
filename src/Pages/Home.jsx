@@ -10,7 +10,7 @@ const Home = () => {
         <div className="flex flex-col gap-4 py-20 pl-12 md:pl-18 md:items-start justify-center">
           <p className="flex items-center text-[#414141] font-500 font-medium md:text-[18px] text-[16px] ">
             <span className='before:content-[""] before:h-[3px] before:w-[40px] before:bg-[#484848] before:block mr-2'></span>
-            OUR SELL
+            OUR BEST SELL
           </p>
           <h1 className=" text-[#414141] text-[52px] md:text-[60px]  ">
             Latest Arrivals
