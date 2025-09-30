@@ -9,58 +9,26 @@ import {
   FiHeart,
 } from "react-icons/fi";
 import { FaNairaSign } from "react-icons/fa6";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setInputData } from "../Redux/InputSlice";
 import { MdShoppingCart } from "react-icons/md";
+import { setRemoveFromCart } from "../Redux/CartSlice";
 import { FaTrash } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import { useAppContext } from "../context/useAppContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 
 const Nav = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const client = useQueryClient();
 
-  const { searchValue, setSearchValue, cartItems } = useAppContext();
-  console.log(cartItems);
-  
   const [openCart, setOpenCart] = useState(false);
 
   const handleOpenCart = () => {
     setOpenCart(!openCart);
   };
 
-  // function to remove item from cart
-
-  const removeFromCart = async (id) => {
-    try {
-      await axios.delete(`https://dummyjson.com/products/${id}`)
-      return {id}
-      
-    } catch (error) {
-      console.error("Error removing from cart:", error);
-      throw error;
-    }
-  }
-
-  const removeMutation = useMutation({
-    mutationFn: removeFromCart,
-    onMutate: async (id) => {
-      await client.cancelQueries({ queryKey: ["cart"] });
-      const previousCart = client.getQueryData(["cart"]);
-
-      client.setQueryData(["cart"], ((old) => ({
-        ...old, products: old.products.filter((item) => item.id !== id),
-      })));
-      return { previousCart };
-    },
-    onError: (_, __, context) => {
-    client.setQueryData(["cart"], context.previousCart);
-  },
-  onSettled: () => {
-    client.invalidateQueries({ queryKey: ["cart"] });
-  },
-  });
-
+  const cart = useSelector((state) => state.cartRed.cartData);
+  const searchInput = useSelector((state) => state.inputRed.valueEnter);
   return (
     <div className="">
       {/* Nav header */}
@@ -119,8 +87,8 @@ const Nav = () => {
           <div className="flex items-center bg-white w-full md:w-1/3 rounded-full ">
             <div className="w-full">
               <input
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
+                value={searchInput}
+                onChange={(event) => dispatch(setInputData(event.target.value))}
                 type="text"
                 placeholder="Search here"
                 className="py-2 pl-5 w-full outline-none"
@@ -152,7 +120,7 @@ const Nav = () => {
                   <FiShoppingCart className="hover:text-red-600" />
                 </div>
                 <p className="absolute top-[-10px] right-[-15px] h-4 w-4 text-[12px] font-semibold flex items-center justify-center  rounded-full bg-red-700">
-                  {cartItems.length}
+                  {cart.length}
                 </p>
               </div>
 
@@ -176,7 +144,7 @@ const Nav = () => {
                     <RxCross2 className="text-black size-7" />
                   </div>
                 </div>
-                {cartItems.length === 0 ? (
+                {cart.length === 0 ? (
                   <div className="flex items-center justify-center flex-col gap-6 h-full ">
                     <p className="text-xl md:text-2xl font-bold font-600 text-red-700/50 ">
                       <div className="w-full flex items-center justify-center">
@@ -197,7 +165,7 @@ const Nav = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col my-6 px-6 md:px-0 overflow-auto h-5/6 ">
-                    {cartItems.map((item, index) => (
+                    {cart.map((item, index) => (
                       <div
                         key={index}
                         className="flex md:items-center md:flex-row flex-col py-4 gap-4 justify-between border-y border-gray-300 w-full bg-whitesmoke shadow px-2 "
@@ -229,7 +197,7 @@ const Nav = () => {
 
                         <div className="cursor-pointer ">
                           <FaTrash
-                            onClick={() => removeMutation.mutate(item.id)}
+                            onClick={() => dispatch(setRemoveFromCart(item.id))}
                             className="w-[20px] h-[20px] text-red-600 "
                           />
                         </div>

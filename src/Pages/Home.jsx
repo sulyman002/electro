@@ -18,7 +18,7 @@ const Home = () => {
           <p onClick={() => {
             navigate("/all-collection");
             window.scrollTo({top: 0, behavior: "smooth"})
-          }} className="flex items-center font-500 font-medium md:text-[18px] text-[16px] cursor-pointer bg-black text-white shadow-lg rounded-md py-4 px-6 hover:scale-90 hover:bg-black/70 justify-center ">
+          }} className="flex items-center w-2/3 font-500 font-medium md:text-[18px] text-[16px] cursor-pointer bg-black text-white shadow-lg rounded-md py-4 px-6 hover:scale-90 hover:bg-black/70 justify-center ">
             SHOP NOW
             
           </p>
@@ -27,7 +27,7 @@ const Home = () => {
           <img
             src="https://cdn.dummyjson.com/products/images/smartphones/iPhone%20X/thumbnail.png"
             alt="hero image"
-            className="w-full object-cover h-fu "
+            className="w-full object-cover h-full "
           />
         </div>
       </div>

@@ -1,150 +1,188 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import fullStar from "../assets/star_icon.svg";
 import dullStar from "../assets/star_dull_icon.svg";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { setCartData } from "../Redux/CartSlice";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useAppContext } from "../context/useAppContext";
+import Loading from "../Components/Loading";
 
+const fetchData = async (id) => {
+  const { data } = await axios.get(`https://dummyjson.com/products/${id}`);
+  return data;
+};
+
+// Add to cart function here
+const addToCart = async (product) => {
+  const { data } = await axios.post("https://dummyjson.com/carts/add", {
+    userId: 1,
+    products: [{ id: product.id, quantity: 1 }],
+  });
+
+  return data;
+};
 
 const ProductPage = () => {
-    const navigate = useNavigate();
   const param = useParams();
-  console.log(param);
   const { id } = param;
-  const dispatch = useDispatch();
+  const client = useQueryClient();
+  const navigate = useNavigate();
+  const sizeData = ["S", "M", "L", "XL"];
+  const { cartData, setCartItems } = useAppContext();
 
-  const product = useSelector(
-    (state) => state.allCollectionRed.allCollectionData
-  );
-  const filterProducts = product?.flatMap((product) => product.products) || [];
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => fetchData(id),
+  });
 
-  console.log(product);
+  const { data: cart } = useQuery({
+    queryKey: ["cart"],
+    queryFn: async () => {
+      const { data } = await axios.get("https://dummyjson.com/carts/1");
+      return data;
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
-  const productData = filterProducts.find((item) => item.id === parseInt(id));
-  console.log(productData);
-  const sizeData = ["S", "P", "L", "XL", "XXL"];
+  useEffect(() => {
+    if (cart?.products) {
+      setCartItems(cart.products);
+    }
+  }, [cart, setCartItems]);
 
-  const handleAddToCart = (product) => {
-    dispatch(setCartData(product))
-  }
+  const mutation = useMutation({
+    mutationFn: addToCart,
+    onMutate: async (product) => {
+      await client.cancelQueries({ queryKey: ["cart"] });
+      const previousCart = client.getQueryData(["cart"]);
 
+      client.setQueriesData(["cart"], (old) => ({
+        ...old,
+        products: [...(old?.products || []), { ...product, quantity: 1 }],
+      }));
+      return { previousCart };
+    },
 
-const check = useSelector((state) => state.cartRed.cartData)
-console.log(check);
+    onError: (_, __, context) => {
+      client.setQueryData(["cart"], context.previousCart);
+    },
+  });
 
-
-  
+  if (isLoading) return <Loading />;
 
   return (
     <div>
       <div className="mx-auto container px-6 md:px-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 py-12 gap-12">
-          <div className="w-full flex gap-3">
-            {/* four image here */}
-            <div className="w-1/5 md:flex flex-col gap-3 hidden">
-              <div className="bg-gray-100/40 shadow">
-                <img
-                  src={productData.thumbnail}
-                  alt="product image"
-                  className=" object-cover w-full"
-                />
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 py-12 gap-12">
+            <div className="w-full flex gap-3">
+              {/* four image here */}
+              <div className="w-1/5 md:flex flex-col gap-3 hidden">
+                <div className="bg-gray-100/40 shadow">
+                  <img
+                    src={product.thumbnail}
+                    alt="product image"
+                    className=" object-cover w-full"
+                  />
+                </div>
+                <div className="bg-gray-100/40 shadow">
+                  <img
+                    src={product.thumbnail}
+                    alt="product image"
+                    className=" object-cover w-full"
+                  />
+                </div>
+                <div className="bg-gray-100/40 shadow">
+                  <img
+                    src={product.thumbnail}
+                    alt="product image"
+                    className=" object-cover w-full"
+                  />
+                </div>
+                <div className="bg-gray-100/40 shadow">
+                  <img
+                    src={product.thumbnail}
+                    alt="product image"
+                    className=" object-cover w-full"
+                  />
+                </div>
               </div>
-              <div className="bg-gray-100/40 shadow">
+              {/* main image here */}
+              <div className="w-full md:w-4/5 bg-gray-100/40 shadow">
                 <img
-                  src={productData.thumbnail}
+                  src={product.thumbnail}
                   alt="product image"
-                  className=" object-cover w-full"
-                />
-              </div>
-              <div className="bg-gray-100/40 shadow">
-                <img
-                  src={productData.thumbnail}
-                  alt="product image"
-                  className=" object-cover w-full"
-                />
-              </div>
-              <div className="bg-gray-100/40 shadow">
-                <img
-                  src={productData.thumbnail}
-                  alt="product image"
-                  className=" object-cover w-full"
+                  className="h-full w-full"
                 />
               </div>
             </div>
-            {/* main image here */}
-            <div className="w-full md:w-4/5 bg-gray-100/40 shadow">
-              <img
-                src={productData.thumbnail}
-                alt="product image"
-                className="h-full w-full"
-              />
-            </div>
-          </div>
-          {/* Right Side */}
-          <div className="flex flex-col">
-            <h2 className="font-500 font-medium text-[#3D3D3D] text-[34px] ">
-              {productData.title}
-            </h2>
-            <div className="flex items-center gap-2 py-2">
-              <img src={fullStar} alt="" className="" />
-              <img src={fullStar} alt="" className="" />
-              <img src={fullStar} alt="" className="" />
-              <img src={fullStar} alt="" className="" />
-              <img src={dullStar} alt="" className="" />
-              <p className="font-400 text-[16px] ">(122)</p>
-            </div>
-            <p className="text-[#2A2A2A] font-500 font-medium text-[32px] py-4 ">
-              ${productData.price}
-            </p>
-            <p className="text-[16px] leading-[28px] text-[#555555] ">
-              A lightweight, usually knitted, pullover shirt, close-fitting and
-              with a round neckline and short sleeves, worn as an undershirt or
-              outer garment.
-            </p>
-            <div className="flex flex-col gap-6 py-6">
-              <h3 className="font-600 font-semibold text-[#656565] text-[20px] ">
-                Select Size
-              </h3>
-              <div className="flex items-center gap-3">
-                {sizeData.map((size) => (
-                  <div className="h-[61px] w-[61px] flex items-center justify-center active:border-3px active:border-[#FF8551] border border-[#EBEBEB] text-[16px] cursor-pointer hover:border-[#FF8551] ">
-                    {size}
-                  </div>
-                ))}
+            {/* Right Side */}
+            <div className="flex flex-col">
+              <h2 className="font-500 font-medium text-[#3D3D3D] text-[34px] ">
+                {product.title}
+              </h2>
+              <div className="flex items-center gap-2 py-2">
+                <img src={fullStar} alt="" className="" />
+                <img src={fullStar} alt="" className="" />
+                <img src={fullStar} alt="" className="" />
+                <img src={fullStar} alt="" className="" />
+                <img src={dullStar} alt="" className="" />
+                <p className="font-400 text-[16px] ">(122)</p>
               </div>
-            </div>
-            <div className="py-6">
-              <div
-                onClick={() => {
-                  handleAddToCart(productData);
-                  console.log(handleAddToCart(productData));
-                  
+              <p className="text-[#2A2A2A] font-500 font-medium text-[32px] py-4 ">
+                ${product.price}
+              </p>
+              <p className="text-[16px] leading-[28px] text-[#555555] ">
+                A lightweight, usually knitted, pullover shirt, close-fitting
+                and with a round neckline and short sleeves, worn as an
+                undershirt or outer garment.
+              </p>
+              <div className="flex flex-col gap-6 py-6">
+                <h3 className="font-600 font-semibold text-[#656565] text-[20px] ">
+                  Select Size
+                </h3>
+                <div className="flex items-center gap-3">
+                  {sizeData.map((size) => (
+                    <div className="h-[61px] w-[61px] flex items-center justify-center active:border-3px active:border-[#FF8551] border border-[#EBEBEB] text-[16px] cursor-pointer hover:border-[#FF8551] ">
+                      {size}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="py-6">
+                <div
+                  onClick={() => {
+                    mutation.mutate(product);
 
-                  setTimeout(() => {
-                    toast.success("product added to cart successfully");
-                  }, 500);
-                }}
-                className="bg-[#1D1D1D] text-white font-600 font-semibold text-[16px] flex items-center justify-center w-[204px] h-[59px] "
-              >
-                ADD TO CART
+                    setTimeout(() => {
+                      toast.success("product added to cart successfully");
+                    }, 500);
+                  }}
+                  className="bg-[#1D1D1D] text-white font-600 font-semibold text-[16px] flex items-center justify-center w-[204px] h-[59px] "
+                >
+                  ADD TO CART
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 py-6 border-t border-gray-300">
+                <p className="text-[#555555] text-[16px] leading-[28px] ">
+                  100% Original product.
+                </p>
+                <p className="text-[#555555] text-[16px] leading-[28px] ">
+                  Cash on delivery is available on this product.
+                </p>
+                <p className="text-[#555555] text-[16px] leading-[28px] ">
+                  Easy return and exchange policy within 7 days.
+                </p>
               </div>
             </div>
-            <div className="flex flex-col gap-4 py-6 border-t border-gray-300">
-              <p className="text-[#555555] text-[16px] leading-[28px] ">
-                100% Original product.
-              </p>
-              <p className="text-[#555555] text-[16px] leading-[28px] ">
-                Cash on delivery is available on this product.
-              </p>
-              <p className="text-[#555555] text-[16px] leading-[28px] ">
-                Easy return and exchange policy within 7 days.
-              </p>
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Review and Description */}
         <div className="py-24">
@@ -188,7 +226,7 @@ console.log(check);
           </div>
           {/* Related product */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 py-8 space-y-10">
-            {filterProducts.slice(31, 36).map((item, index) => (
+            {cartData.slice(31, 36).map((item, index) => (
               <div
                 onClick={() => {
                   navigate(`/product/${item.id}`);

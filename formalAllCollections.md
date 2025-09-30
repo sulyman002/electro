@@ -1,15 +1,25 @@
-import { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { setAllCollectionData } from "../Redux/AllCollectionSlice";
 import { useNavigate } from "react-router-dom";
-
-import { useAppContext } from "../context/useAppContext";
-import Loading from "../Components/Loading";
+import gsap from "gsap";
+import { useRef } from "react";
 
 const AllCollections = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const loadingRef = useRef();
+const searchValue = useSelector((state) => state.inputRed.valueEnter);
 
-  const { searchValue, setCartData } = useAppContext();
+  useEffect(() => {
+    gsap.to(loadingRef.current, {
+      rotation: 360,
+      duration: 4,
+      ease: "bounce.out",
+    });
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -27,27 +37,41 @@ const AllCollections = () => {
     queryFn: fetchData,
   });
 
-  const products = useMemo(
-    () => data?.carts?.flatMap((item) => item.products) || [],
-    [data]
-  );
-
   useEffect(() => {
-    setCartData(products);
-  }, [products, setCartData]);
+    if(data?.carts) {
+        dispatch(setAllCollectionData(data?.carts));
+        console.log(data?.cart);
+        
+    }
+  }, [data, dispatch]);
+
+  const finalProduct = useSelector(
+    (state) => state.allCollectionRed.allCollectionData
+  );
+  console.log(finalProduct);
+
+  const products = finalProduct?.flatMap((item) => item.products) || [];
+  
   console.log(products);
 
   if (error) return "There is an error" + error.message;
 
-  const matchSearch = (searchProduct) => {
-    return (
-      searchValue === "" ||
-      searchProduct.title.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  };
+//   filter search value here
 
-  const filterData = products.filter(matchSearch);
-  console.log(filterData);
+
+const matchSearch = (searchProduct) => {
+    return (
+        searchValue === "" || searchProduct.title.toLowerCase().includes(searchValue.toLowerCase())
+    )
+    
+}
+
+const filterData = products.filter(matchSearch)
+console.log(filterData);
+
+
+
+  
 
   return (
     <div className="mx-auto container">
@@ -62,7 +86,13 @@ const AllCollections = () => {
         </div>
         {/* collections */}
         {isPending ? (
-          <Loading />
+          <div className="inset-0 fixed bg-black backdrop-blur-2xl h-screen w-full text-white flex items-center justify-center flex-col gap-6">
+            <div
+              ref={loadingRef}
+              className="h-[100px] w-[100px] rounded-full border-[8px] border-t-transparent border-b-transparent border-gray-300"
+            ></div>
+            <p className="text-xl text-gray-300 font-bold"> Loading...</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 py-8 space-y-2">
             {filterData.map((item, index) => (
